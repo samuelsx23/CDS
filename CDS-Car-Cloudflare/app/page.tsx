@@ -1,51 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-
-type Vehicle = {
-  id: number;
-  brand: string;
-  model: string;
-  version: string;
-  price: number;
-  year: number;
-  km: number;
-  color: string;
-  transmission: string;
-  fuel: string;
-  image: string;
-};
+import { defaultVehicles, type Vehicle } from "../lib/site-data";
 
 const WHATSAPP_NUMBER = "5511917856525";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
-
-const vehicles: Vehicle[] = [
-  { id: 5229310, brand: "BYD", model: "Song Plus", version: "1.5 DM-i Turbo Híbrido Automático", price: 249900, year: 2027, km: 22, color: "Cinza", transmission: "Automático", fuel: "Híbrido", image: "/images/vehicles/db73d979516de8f7.jpg" },
-  { id: 4720344, brand: "Chevrolet", model: "Onix", version: "1.0 Turbo Flex Premier Automático", price: 69900, year: 2021, km: 85000, color: "Prata", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/ac7b7c98927e3df8.jpg" },
-  { id: 5096757, brand: "Chevrolet", model: "Tracker", version: "1.8 MPFI LTZ 4x2 16V Flex", price: 67500, year: 2015, km: 69037, color: "Preto", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/cb029c74c8944e84.jpg" },
-  { id: 5223226, brand: "Fiat", model: "Toro", version: "1.3 Turbo 270 Flex Volcano AT6", price: 116900, year: 2022, km: 56043, color: "Cinza", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/ca11de2e0ac08433.jpg" },
-  { id: 5245147, brand: "Ford", model: "Fiesta", version: "1.0 Rocam SE Plus 8V Flex", price: 36900, year: 2014, km: 69200, color: "Preto", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/97811ebb5fd10807.jpg" },
-  { id: 4622842, brand: "Honda", model: "CB 300F Twister", version: "ABS", price: 28500, year: 2026, km: 0, color: "Vermelho", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/a486a30f46b112ab.jpg" },
-  { id: 5248602, brand: "Honda", model: "HR-V", version: "1.5 DI i-VTEC Turbo Touring CVT", price: 158600, year: 2024, km: 39059, color: "Cinza", transmission: "CVT", fuel: "Flex", image: "/images/vehicles/becee35006878473.jpg" },
-  { id: 4131667, brand: "Honda", model: "HR-V", version: "1.8 16V Flex EX 4P", price: 93800, year: 2018, km: 92295, color: "Cinza", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/4d7e52ea526cdcb6.jpg" },
-  { id: 5157746, brand: "Honda", model: "NXR 160 Bros", version: "ESDD", price: 17600, year: 2019, km: 47500, color: "Preto", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/394062b99f9418c8.jpg" },
-  { id: 5134777, brand: "Honda", model: "PCX 150", version: "PCX 150", price: 12900, year: 2015, km: 58600, color: "Preto", transmission: "Manual", fuel: "Gasolina", image: "/images/vehicles/37953dd311cdf942.jpg" },
-  { id: 5167520, brand: "Honda", model: "Pop 110i", version: "Pop 110i", price: 11500, year: 2024, km: 67256, color: "Vermelho", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/77e8a8c08444ca8e.jpg" },
-  { id: 5259464, brand: "Hyundai", model: "Creta", version: "1.6 16V Flex Action", price: 89900, year: 2022, km: 67300, color: "Branco", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/21586333b91e57b7.jpg" },
-  { id: 5205895, brand: "Jeep", model: "Renegade", version: "1.8 16V Flex Sport 4P", price: 69000, year: 2018, km: 65711, color: "Cinza", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/ef3adedc7e128588.jpg" },
-  { id: 4825836, brand: "Jeep", model: "Renegade", version: "1.8 16V Flex Limited 4P", price: 93500, year: 2021, km: 89800, color: "Cinza", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/c0c56214b959297b.jpg" },
-  { id: 4595705, brand: "Land Rover", model: "Discovery", version: "3.0 V6 TD6 Diesel HSE 4WD", price: 259000, year: 2019, km: 74159, color: "Preto", transmission: "Automático", fuel: "Diesel", image: "/images/vehicles/4c3a262ec9e2297f.jpg" },
-  { id: 5200771, brand: "Mercedes-Benz", model: "C 300", version: "2.0 CGI Sport 9G-Tronic", price: 221000, year: 2019, km: 42656, color: "Branco", transmission: "Automático", fuel: "Gasolina", image: "/images/vehicles/5833b65d0956b5d7.jpg" },
-  { id: 5207758, brand: "Mitsubishi", model: "ASX", version: "2.0 4x2 16V Flex 4P", price: 82600, year: 2018, km: 89000, color: "Branco", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/8ee581cfad045ab3.jpg" },
-  { id: 5180357, brand: "Nissan", model: "Kicks", version: "1.6 16V Flexstart Sense Xtronic", price: 103900, year: 2024, km: 24587, color: "Vermelho", transmission: "CVT", fuel: "Flex", image: "/images/vehicles/8e94339a46c5d182.jpg" },
-  { id: 5202135, brand: "Nissan", model: "Versa", version: "1.0 12V Flex 4P", price: 57900, year: 2020, km: 26174, color: "Prata", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/1b0dd0b50471d812.jpg" },
-  { id: 5157104, brand: "Toyota", model: "Corolla Cross", version: "1.8 VVT-i Hybrid Flex XRX CVT", price: 171900, year: 2024, km: 35582, color: "Branco", transmission: "Automático", fuel: "Híbrido", image: "/images/vehicles/5473c686f14d8753.jpg" },
-  { id: 4450683, brand: "Volkswagen", model: "Kombi", version: "1.6 MI Pick-up CS 8V 2P", price: 49900, year: 1979, km: 64733, color: "Bege", transmission: "Manual", fuel: "Gasolina", image: "/images/vehicles/1317fcc1da77448e.jpg" },
-  { id: 5160813, brand: "Volkswagen", model: "Polo", version: "1.0 200 TSI Highline", price: 83900, year: 2020, km: 64833, color: "Azul", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/32e559373a07ea18.jpg" },
-  { id: 4472010, brand: "Volkswagen", model: "Saveiro", version: "1.6 MSI Extreme CD 16V 2P", price: 106900, year: 2025, km: 31677, color: "Cinza", transmission: "Manual", fuel: "Flex", image: "/images/vehicles/58929f8b6d19eebf.jpg" },
-  { id: 5190539, brand: "Volkswagen", model: "T-Cross", version: "1.0 200 TSI Comfortline", price: 98700, year: 2022, km: 63636, color: "Preto", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/4e7fd36e639bb92b.jpg" },
-  { id: 5057865, brand: "Volkswagen", model: "Virtus", version: "1.0 200 TSI Comfortline", price: 108900, year: 2025, km: 28383, color: "Branco", transmission: "Automático", fuel: "Flex", image: "/images/vehicles/30a578d50868264b.jpg" },
-];
 
 const money = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -60,6 +19,8 @@ function whatsappLink(message: string) {
 }
 
 export default function Home() {
+  const [vehicles, setVehicles] = useState<Vehicle[]>(defaultVehicles);
+  const [heroIndex, setHeroIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("");
@@ -68,6 +29,38 @@ export default function Home() {
   const [showAll, setShowAll] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [cookieVisible, setCookieVisible] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/site-data")
+      .then((response) => response.json())
+      .then((payload: { vehicles?: Vehicle[] }) => {
+        if (active && payload.vehicles?.length) setVehicles(payload.vehicles);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const heroVehicles = useMemo(() => {
+    const featured = vehicles.filter((vehicle) => vehicle.featured);
+    return (featured.length ? featured : vehicles).slice(0, 6);
+  }, [vehicles]);
+
+  useEffect(() => {
+    if (heroVehicles.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const interval = window.setInterval(
+      () => setHeroIndex((current) => (current + 1) % heroVehicles.length),
+      5200,
+    );
+    return () => window.clearInterval(interval);
+  }, [heroVehicles.length]);
+
+  useEffect(() => {
+    if (heroIndex >= heroVehicles.length) setHeroIndex(0);
+  }, [heroIndex, heroVehicles.length]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -89,7 +82,7 @@ export default function Home() {
 
   const brands = useMemo(
     () => Array.from(new Set(vehicles.map((vehicle) => vehicle.brand))).sort(),
-    [],
+    [vehicles],
   );
 
   const filteredVehicles = useMemo(() => {
@@ -107,12 +100,13 @@ export default function Home() {
       if (sort === "price-desc") return b.price - a.price;
       if (sort === "year") return b.year - a.year;
       if (sort === "km") return a.km - b.km;
-      return b.id - a.id;
+      return Number(b.featured) - Number(a.featured) || b.id - a.id;
     });
-  }, [brand, maxPrice, query, sort]);
+  }, [brand, maxPrice, query, sort, vehicles]);
 
   const hasFilters = Boolean(query || brand || maxPrice);
   const displayedVehicles = showAll || hasFilters ? filteredVehicles : filteredVehicles.slice(0, 8);
+  const activeHero = heroVehicles[heroIndex] ?? defaultVehicles[0];
 
   function clearFilters() {
     setQuery("");
@@ -184,21 +178,41 @@ export default function Home() {
       </header>
 
       <section className="hero" id="inicio">
-        <img className="hero-image" src="/images/vehicles/db73d979516de8f7.jpg" alt="BYD Song Plus disponível na CDS Car" />
+        <div className="hero-slides" aria-hidden="true">
+          {heroVehicles.map((vehicle, index) => (
+            <img className={`hero-image ${index === heroIndex ? "is-active" : ""}`} src={vehicle.image} alt="" key={vehicle.id} />
+          ))}
+        </div>
         <div className="hero-overlay" />
-        <div className="page-shell hero-content">
-          <span className="eyebrow hero-eyebrow">CDS Car • Intermediações</span>
-          <h1>Seu próximo veículo,<br />com procedência de verdade.</h1>
-          <p>Compra, venda, financiamento e seguros em um só lugar — com atendimento próximo e veículos selecionados.</p>
-          <div className="hero-actions">
-            <a className="button button-primary" href="#estoque">Ver veículos</a>
-            <a className="button button-ghost" href="#vender">Quero vender meu carro</a>
+        <div className="page-shell hero-content hero-content-premium">
+          <div className="hero-copy">
+            <span className="eyebrow hero-eyebrow">Curadoria CDS Car • Mooca</span>
+            <h1>Escolhas melhores.<br />Negócios mais seguros.</h1>
+            <p>Veículos selecionados, avaliação transparente e uma equipe que conduz compra, venda, crédito e seguro do primeiro contato à entrega.</p>
+            <div className="hero-actions">
+              <a className="button button-primary" href="#estoque">Explorar oportunidades</a>
+              <a className="button button-ghost" href="#vender">Avaliar meu veículo</a>
+            </div>
+            <div className="trust-row" aria-label="Diferenciais CDS Car">
+              <span>Laudo cautelar aprovado</span>
+              <span>Sem leilão</span>
+              <span>Sem sinistro</span>
+            </div>
           </div>
-          <div className="trust-row" aria-label="Diferenciais CDS Car">
-            <span>Laudo cautelar aprovado</span>
-            <span>Sem leilão</span>
-            <span>Sem sinistro</span>
-          </div>
+          <aside className="hero-offer" aria-label="Veículo em destaque">
+            <div className="hero-offer-top"><span>Destaque do estoque</span><em>{String(heroIndex + 1).padStart(2, "0")} / {String(heroVehicles.length).padStart(2, "0")}</em></div>
+            <p>{activeHero.brand}</p>
+            <h2>{activeHero.model}</h2>
+            <span className="hero-offer-version">{activeHero.version}</span>
+            <div className="hero-offer-specs"><span>{activeHero.year}</span><span>{number.format(activeHero.km)} km</span><span>{activeHero.transmission}</span></div>
+            <strong>{money.format(activeHero.price)}</strong>
+            <button type="button" onClick={() => setSelectedVehicle(activeHero)}>Ver condições deste veículo</button>
+          </aside>
+        </div>
+        <div className="page-shell hero-controls">
+          <button type="button" aria-label="Veículo anterior" onClick={() => setHeroIndex((heroIndex - 1 + heroVehicles.length) % heroVehicles.length)}>←</button>
+          <div>{heroVehicles.map((vehicle, index) => <button className={index === heroIndex ? "is-active" : ""} type="button" aria-label={`Mostrar ${vehicle.brand} ${vehicle.model}`} onClick={() => setHeroIndex(index)} key={vehicle.id} />)}</div>
+          <button type="button" aria-label="Próximo veículo" onClick={() => setHeroIndex((heroIndex + 1) % heroVehicles.length)}>→</button>
         </div>
       </section>
 
@@ -206,8 +220,8 @@ export default function Home() {
         <div className="page-shell">
           <div className="search-card">
             <div className="search-heading">
-              <span className="eyebrow">Estoque CDS Car</span>
-              <h2>Encontre o veículo ideal para você</h2>
+              <span className="eyebrow">Oportunidades CDS Car</span>
+              <h2>Encontre seu próximo grande negócio</h2>
             </div>
             <div className="search-grid">
               <label className="search-field search-field-wide">
@@ -248,28 +262,28 @@ export default function Home() {
       <section className="services section-pad" aria-labelledby="services-title">
         <div className="page-shell">
           <div className="section-heading centered">
-            <span className="eyebrow">Soluções completas</span>
-            <h2 id="services-title">Tudo para o seu próximo passo</h2>
-            <p>A CDS Intermediações reúne CDS Car e CDS Corretora de Seguros para você resolver tudo com praticidade.</p>
+            <span className="eyebrow">Uma jornada completa</span>
+            <h2 id="services-title">Do interesse à chave na mão.</h2>
+            <p>A CDS reúne veículo, negociação, crédito e proteção em uma experiência conduzida por especialistas.</p>
           </div>
           <div className="service-grid">
             <a className="service-card" href="#estoque">
               <span className="service-number">01</span>
-              <h3>Comprar seu veículo</h3>
-              <p>Carros e motos selecionados, com procedência e laudo cautelar aprovado.</p>
-              <strong>Ver estoque <span aria-hidden="true">→</span></strong>
+              <h3>Comprar com confiança</h3>
+              <p>Uma seleção criteriosa para você decidir com clareza e sair dirigindo sem surpresas.</p>
+              <strong>Encontrar meu veículo <span aria-hidden="true">→</span></strong>
             </a>
             <a className="service-card" href="#vender">
               <span className="service-number">02</span>
-              <h3>Vender com segurança</h3>
-              <p>Um consultor especialista cuida da sua venda do começo ao fim.</p>
-              <strong>Avaliar meu veículo <span aria-hidden="true">→</span></strong>
+              <h3>Vender melhor</h3>
+              <p>Posicionamento comercial, atendimento dos interessados e negociação conduzida por quem entende.</p>
+              <strong>Receber uma avaliação <span aria-hidden="true">→</span></strong>
             </a>
             <a className="service-card" href="#financiamento">
               <span className="service-number">03</span>
               <h3>Financiar e proteger</h3>
-              <p>Condições de financiamento e apoio da CDS Corretora de Seguros.</p>
-              <strong>Fazer simulação <span aria-hidden="true">→</span></strong>
+              <p>Condições sob medida e apoio da CDS Corretora para você fechar o negócio completo.</p>
+              <strong>Montar minha condição <span aria-hidden="true">→</span></strong>
             </a>
           </div>
         </div>
@@ -279,8 +293,8 @@ export default function Home() {
         <div className="page-shell">
           <div className="inventory-top">
             <div className="section-heading">
-              <span className="eyebrow">Ofertas em destaque</span>
-              <h2 id="inventory-title">Nosso estoque</h2>
+              <span className="eyebrow">Seleção atualizada</span>
+              <h2 id="inventory-title">Oportunidades que valem a visita</h2>
               <p>{filteredVehicles.length} {filteredVehicles.length === 1 ? "veículo encontrado" : "veículos encontrados"}</p>
             </div>
             <label className="sort-field">
@@ -349,14 +363,10 @@ export default function Home() {
 
       <section className="about section-pad" id="empresa" aria-labelledby="about-title">
         <div className="page-shell about-grid">
-          <div className="about-visual">
-            <img src="/images/vehicles/becee35006878473.jpg" alt="Veículo selecionado no showroom da CDS Car" loading="lazy" />
-            <div className="about-badge"><strong>Procedência</strong><span>em primeiro lugar</span></div>
-          </div>
           <div className="about-copy">
-            <span className="eyebrow">Quem somos</span>
-            <h2 id="about-title">Confiança para comprar e tranquilidade para vender.</h2>
-            <p className="lead">Temos nos consagrado como uma das agências de automóveis de maior prestígio da região.</p>
+            <span className="eyebrow">Reputação construída em cada negócio</span>
+            <h2 id="about-title">A segurança de uma boa escolha começa antes da chave.</h2>
+            <p className="lead">Na CDS Car, cada veículo precisa fazer sentido para o nosso estoque antes de fazer sentido para você.</p>
             <p>Trabalhamos na intermediação de veículos, trazendo segurança, conforto e garantia aos nossos clientes. Selecionamos somente carros de procedência, sem passagem por leilão e sem sinistros. Todos os nossos veículos possuem laudo cautelar aprovado.</p>
             <p>A CDS Intermediações é composta por duas empresas, CDS Car e CDS Corretora de Seguros, trazendo comodidade e praticidade para você fazer tudo no mesmo lugar. Não perca tempo: compre seu veículo com quem entende do assunto.</p>
             <div className="about-points">
@@ -365,6 +375,16 @@ export default function Home() {
               <div><strong>1 só lugar</strong><span>carro, crédito e seguro</span></div>
             </div>
           </div>
+          <div className="commercial-proof">
+            <span className="commercial-proof-kicker">Padrão CDS</span>
+            <h3>Mais critério na entrada.<br />Mais confiança na saída.</h3>
+            <div className="commercial-proof-steps">
+              <div><span>01</span><section><strong>Histórico verificado</strong><p>Procedência, documentação e condições avaliadas antes do anúncio.</p></section></div>
+              <div><span>02</span><section><strong>Negociação transparente</strong><p>Informação clara, atendimento consultivo e sem pressão desnecessária.</p></section></div>
+              <div><span>03</span><section><strong>Solução completa</strong><p>Compra, venda, financiamento e seguro coordenados no mesmo lugar.</p></section></div>
+            </div>
+            <a className="button button-primary" href={whatsappLink("Olá! Quero conhecer o padrão de atendimento da CDS Car.")} target="_blank" rel="noreferrer">Conversar com um especialista</a>
+          </div>
         </div>
       </section>
 
@@ -372,7 +392,7 @@ export default function Home() {
         <div className="page-shell sell-grid">
           <div className="sell-copy">
             <span className="eyebrow light">Venda seu carro</span>
-            <h2 id="sell-title">Venda melhor. Venda com segurança.</h2>
+            <h2 id="sell-title">Seu carro vale mais quando é bem apresentado.</h2>
             <p>Temos a solução completa para você vender seu carro ganhando mais. Garantimos um processo seguro e dedicamos um consultor especialista que cuidará da sua venda do começo ao fim.</p>
             <ul>
               <li>Avaliação personalizada do seu veículo</li>
@@ -405,7 +425,7 @@ export default function Home() {
         <div className="page-shell finance-grid">
           <div className="finance-card-main">
             <span className="eyebrow">Financiamento</span>
-            <h2 id="finance-title">Planos que cabem na sua vida.</h2>
+            <h2 id="finance-title">Crédito inteligente para uma decisão confortável.</h2>
             <p>Simule as condições para o veículo que deseja e receba atendimento personalizado para encontrar a melhor alternativa.</p>
             <a className="button button-primary" href={whatsappLink("Olá! Quero simular o financiamento de um veículo com a CDS Car.")} target="_blank" rel="noreferrer">Simular financiamento</a>
           </div>
@@ -455,7 +475,7 @@ export default function Home() {
             </div>
           </div>
           <div className="footer-links"><strong>Navegue</strong><a href="#inicio">Home</a><a href="#empresa">Empresa</a><a href="#estoque">Veículos</a><a href="#vender">Venda seu carro</a></div>
-          <div className="footer-links"><strong>Atendimento</strong><a href="#financiamento">Financiamento</a><a href="#contato">Localização</a><a href="#contato">Fale conosco</a><a href="#privacidade">Política de privacidade</a></div>
+          <div className="footer-links"><strong>Atendimento</strong><a href="#financiamento">Financiamento</a><a href="#contato">Localização</a><a href="#contato">Fale conosco</a><a href="#privacidade">Política de privacidade</a><a href="/admin">Área administrativa</a></div>
           <div className="footer-contact"><strong>CDS Car</strong><p>Rua Fernando Falcão, 102<br />Mooca — São Paulo — SP</p><a href="tel:+5511940067474">(11) 94006-7474</a><a href="tel:+5511917856525">(11) 91785-6525</a></div>
         </div>
         <div className="page-shell privacy-panel" id="privacidade">

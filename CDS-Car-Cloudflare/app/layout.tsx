@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import "./globals.css";
 
-const title = "CDS Car | Veículos com procedência na Mooca";
+const title = "CDS Car | Veículos selecionados e negócios seguros";
 const description =
-  "Compra, venda, financiamento e seguros de veículos com procedência, laudo cautelar aprovado e atendimento especializado em São Paulo.";
+  "Veículos selecionados, compra, venda, financiamento e seguros com atendimento consultivo e procedência comprovada na Mooca, em São Paulo.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: "CDS Car Intermediações",
       title,
       description,
-      images: [{ url: `${origin}/og.png`, width: 1200, height: 630, alt: "CDS Car — seu próximo veículo com procedência de verdade" }],
+      images: [{ url: `${origin}/og.png`, width: 1200, height: 630, alt: "CDS Car — escolhas melhores e negócios mais seguros" }],
     },
     twitter: {
       card: "summary_large_image",
