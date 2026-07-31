@@ -10,6 +10,9 @@ Site institucional e catálogo de veículos da CDS Car, criado com foco em uma e
 - informações institucionais, contatos, horários, mapa e redes sociais;
 - política de privacidade e aviso de cookies;
 - metadados de compartilhamento e imagem social própria.
+- carrossel automático do estoque na abertura do site;
+- painel administrativo protegido em `/admin` para editar os veículos e publicar novas fotos;
+- persistência do catálogo e das imagens no Cloudflare D1.
 
 ## Requisitos
 
@@ -36,9 +39,13 @@ A saída é gerada em `dist/` no formato ESM compatível com Cloudflare Workers.
 - `app/page.tsx`: conteúdo e interações do site;
 - `app/globals.css`: identidade visual e responsividade;
 - `app/layout.tsx`: SEO e metadados sociais;
+- `app/admin/`: painel privado de gestão do estoque;
+- `app/api/` e `db/`: APIs e persistência no Cloudflare D1;
 - `public/images/`: logotipo, estoque e imagem de compartilhamento;
 - `.openai/hosting.json`: configuração de publicação do projeto.
 
-Os contatos, preços e dados do estoque representam o levantamento feito no site da CDS Car em 31/07/2026 e podem ser atualizados no array `vehicles` em `app/page.tsx`.
+Os contatos, preços e dados do estoque representam o levantamento feito no site da CDS Car em 31/07/2026. Depois da primeira inicialização, o estoque pode ser atualizado pelo painel administrativo sem alterar o código.
 
-Site oficial da CDS Car
+## Configuração no Cloudflare
+
+O projeto espera o binding D1 `DB`, a variável de build `CDS_D1_DATABASE_ID` e a variável de execução `ADMIN_EMAILS`. A rota `/admin*` deve ser protegida pelo Cloudflare Access para que o cabeçalho de identidade seja validado pelas APIs administrativas.

@@ -1,6 +1,7 @@
 declare module "cloudflare:workers" {
   export const env: {
     DB?: any;
+    ADMIN_EMAILS?: string;
   };
 }
 
