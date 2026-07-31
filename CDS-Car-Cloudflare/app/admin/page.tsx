@@ -33,6 +33,9 @@ async function optimizePhoto(file: File) {
 }
 
 export default function AdminPage() {
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
+  const [password, setPassword] = useState("");
+  const [loginStatus, setLoginStatus] = useState("");
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [adminEmail, setAdminEmail] = useState("");
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -51,19 +54,27 @@ export default function AdminPage() {
     ])
       .then(async ([sessionResponse, vehicleResponse]) => {
         if (sessionResponse.status === 401 || vehicleResponse.status === 401) {
-          window.location.replace("/admin/login");
-          throw new Error("Redirecionando para o login...");
+          if (active) {
+            setAuthorized(false);
+            setStatus("");
+          }
+          return;
         }
         if (!sessionResponse.ok || !vehicleResponse.ok) throw new Error("Não foi possível carregar o painel");
         const session = (await sessionResponse.json()) as { email: string };
         const payload = (await vehicleResponse.json()) as { vehicles: Vehicle[] };
         if (!active) return;
+        setAuthorized(true);
         setAdminEmail(session.email);
         setVehicles(payload.vehicles);
         setSelectedId(payload.vehicles[0]?.id ?? null);
         setStatus("Alterações publicadas ficam disponíveis no site em segundos.");
       })
-      .catch((error) => active && setStatus(error instanceof Error ? error.message : "Não foi possível carregar o painel"));
+      .catch((error) => {
+        if (!active) return;
+        setAuthorized(false);
+        setLoginStatus(error instanceof Error ? error.message : "Não foi possível carregar o painel");
+      });
     return () => {
       active = false;
     };
@@ -90,6 +101,31 @@ export default function AdminPage() {
     );
   }, [query, vehicles]);
 
+  async function submitLogin(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setLoginStatus("Verificando acesso...");
+    try {
+      const response = await fetch("/admin/api/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Não foi possível entrar");
+      setLoginStatus("Acesso liberado. Abrindo painel...");
+      window.location.reload();
+    } catch (error) {
+      setLoginStatus(error instanceof Error ? error.message : "Não foi possível entrar");
+      setBusy(false);
+    }
+  }
+
+  async function logout() {
+    await fetch("/admin/api/session", { method: "DELETE" });
+    window.location.replace("/admin");
+  }
+
   function updateField(event: ChangeEvent<HTMLInputElement>) {
     if (!draft) return;
     const { name, value, type, checked } = event.target;
@@ -111,7 +147,7 @@ export default function AdminPage() {
         body: JSON.stringify({ vehicle: draft }),
       });
       if (response.status === 401) {
-        window.location.replace("/admin/login");
+        setAuthorized(false);
         return;
       }
       const payload = (await response.json()) as { error?: string; vehicle?: Vehicle };
@@ -135,7 +171,7 @@ export default function AdminPage() {
       form.set("file", photo);
       const response = await fetch("/admin/api/upload", { method: "POST", body: form });
       if (response.status === 401) {
-        window.location.replace("/admin/login");
+        setAuthorized(false);
         return;
       }
       const payload = (await response.json()) as { error?: string; image?: string };
@@ -171,6 +207,45 @@ export default function AdminPage() {
     }
   }
 
+  if (authorized !== true) {
+    return (
+      <main className="admin-login-shell">
+        <a className="admin-login-back" href="/">← Voltar ao site</a>
+        <section className="admin-login-card">
+          <div className="admin-login-brand">
+            <img src="/images/brand/cds-car-logo.png" alt="CDS Car Intermediações" />
+            <span>Ambiente seguro</span>
+          </div>
+          <div className="admin-login-heading">
+            <span>Painel administrativo</span>
+            <h1>Gestão do estoque CDS Car.</h1>
+            <p>Entre com a senha administrativa para atualizar veículos, imagens e destaques do site.</p>
+          </div>
+          <form onSubmit={submitLogin}>
+            <label htmlFor="admin-password">Senha de acesso</label>
+            <input
+              id="admin-password"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Digite sua senha"
+              autoComplete="current-password"
+              minLength={12}
+              required
+              autoFocus
+            />
+            <button type="submit" disabled={busy || authorized === null}>
+              {authorized === null ? "Verificando..." : busy ? "Entrando..." : "Entrar no painel"}
+            </button>
+            <p className="admin-login-status" role="status">{loginStatus}</p>
+          </form>
+          <small>O acesso é protegido e a sessão expira automaticamente.</small>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="admin-shell">
       <header className="admin-header">
@@ -180,7 +255,7 @@ export default function AdminPage() {
         </div>
         <nav>
           <a href="/" target="_blank" rel="noreferrer">Ver site</a>
-          <a href="/admin/api/logout">Sair</a>
+          <button type="button" onClick={logout}>Sair</button>
         </nav>
       </header>
 
