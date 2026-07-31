@@ -29,6 +29,25 @@ const worker = {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    if (url.pathname.startsWith("/media/")) {
+      const assetId = decodeURIComponent(url.pathname.slice("/media/".length));
+      if (!assetId || assetId.includes("/") || assetId.includes("..")) return new Response("Not found", { status: 404 });
+
+      const asset = (await env.DB?.prepare("SELECT data, content_type FROM media_assets WHERE id = ?")
+        .bind(assetId)
+        .first()) as { data: number[] | ArrayBuffer; content_type: string } | null;
+      if (!asset) return new Response("Not found", { status: 404 });
+
+      const body = asset.data instanceof ArrayBuffer ? asset.data : Uint8Array.from(asset.data);
+      return new Response(body, {
+        headers: {
+          "Content-Type": asset.content_type,
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
+
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {
