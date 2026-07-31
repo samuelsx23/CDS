@@ -30,24 +30,26 @@ test("renderiza a página principal da CDS Car", async () => {
 
   const html = await response.text();
   assert.match(html, /CDS Car/i);
-  assert.match(html, /Seu próximo veículo/i);
-  assert.match(html, /Nosso estoque/i);
+  assert.match(html, /Escolhas melhores/i);
+  assert.match(html, /Oportunidades que valem a visita/i);
   assert.match(html, /Rua Fernando Falcão, 102/i);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape/i);
 });
 
 test("mantém metadados, conteúdo e assets de produção", async () => {
-  const [page, layout, packageJson, hostingConfig, ogImage] = await Promise.all([
+  const [page, siteData, layout, packageJson, hostingConfig, ogImage] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../lib/site-data.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
     readFile(new URL("../.openai/hosting.json", import.meta.url), "utf8"),
     readFile(new URL("../public/og.png", import.meta.url)),
   ]);
 
-  assert.match(page, /const vehicles: Vehicle\[\]/);
+  assert.match(page, /defaultVehicles/);
+  assert.match(siteData, /export const defaultVehicles/);
   assert.match(page, /WHATSAPP_NUMBER/);
-  assert.match(layout, /CDS Car \| Veículos com procedência na Mooca/);
+  assert.match(layout, /CDS Car \| Veículos selecionados e negócios seguros/);
   assert.match(layout, /openGraph/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton/);
   assert.match(hostingConfig, /project_id/);
