@@ -50,7 +50,11 @@ export default function AdminPage() {
       fetch("/admin/api/vehicles", { cache: "no-store" }),
     ])
       .then(async ([sessionResponse, vehicleResponse]) => {
-        if (!sessionResponse.ok || !vehicleResponse.ok) throw new Error("Acesso não autorizado");
+        if (sessionResponse.status === 401 || vehicleResponse.status === 401) {
+          window.location.replace("/admin/login");
+          throw new Error("Redirecionando para o login...");
+        }
+        if (!sessionResponse.ok || !vehicleResponse.ok) throw new Error("Não foi possível carregar o painel");
         const session = (await sessionResponse.json()) as { email: string };
         const payload = (await vehicleResponse.json()) as { vehicles: Vehicle[] };
         if (!active) return;
@@ -106,6 +110,10 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vehicle: draft }),
       });
+      if (response.status === 401) {
+        window.location.replace("/admin/login");
+        return;
+      }
       const payload = (await response.json()) as { error?: string; vehicle?: Vehicle };
       if (!response.ok || !payload.vehicle) throw new Error(payload.error ?? "Falha ao salvar");
       setVehicles((current) => current.map((item) => (item.id === draft.id ? payload.vehicle! : item)));
@@ -126,6 +134,10 @@ export default function AdminPage() {
       form.set("vehicleId", String(draft.id));
       form.set("file", photo);
       const response = await fetch("/admin/api/upload", { method: "POST", body: form });
+      if (response.status === 401) {
+        window.location.replace("/admin/login");
+        return;
+      }
       const payload = (await response.json()) as { error?: string; image?: string };
       if (!response.ok || !payload.image) throw new Error(payload.error ?? "Falha no envio");
       const updated = { ...draft, image: payload.image };
@@ -168,7 +180,7 @@ export default function AdminPage() {
         </div>
         <nav>
           <a href="/" target="_blank" rel="noreferrer">Ver site</a>
-          <a href="/cdn-cgi/access/logout">Sair</a>
+          <a href="/admin/api/logout">Sair</a>
         </nav>
       </header>
 
