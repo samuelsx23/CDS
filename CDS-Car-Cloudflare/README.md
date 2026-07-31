@@ -48,4 +48,4 @@ Os contatos, preços e dados do estoque representam o levantamento feito no site
 
 ## Configuração no Cloudflare
 
-O projeto espera o binding D1 `DB`, a variável de build `CDS_D1_DATABASE_ID` e a variável de execução `ADMIN_EMAILS`. A rota `/admin*` deve ser protegida pelo Cloudflare Access para que o cabeçalho de identidade seja validado pelas APIs administrativas.
+O projeto espera o binding D1 `DB`, a variável de build `CDS_D1_DATABASE_ID` e as variáveis de execução `ADMIN_EMAILS`, `ADMIN_PASSWORD` e `ADMIN_SESSION_SECRET`. As duas últimas devem ser cadastradas como **Secret** no painel da Cloudflare. O acesso em `/admin` usa cookie seguro, com duração máxima de oito horas, e nunca envia a senha administrativa ao navegador.
