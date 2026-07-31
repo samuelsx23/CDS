@@ -40,3 +40,5 @@ A saída é gerada em `dist/` no formato ESM compatível com Cloudflare Workers.
 - `.openai/hosting.json`: configuração de publicação do projeto.
 
 Os contatos, preços e dados do estoque representam o levantamento feito no site da CDS Car em 31/07/2026 e podem ser atualizados no array `vehicles` em `app/page.tsx`.
+
+Site oficial da CDS Car
