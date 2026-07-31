@@ -2464,10 +2464,14 @@ img {
   text-transform: uppercase;
 }
 
-.admin-header nav a {
+.admin-header nav a,
+.admin-header nav button {
   padding: 10px 14px;
   border: 1px solid #d9e2e7;
   border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  cursor: pointer;
   font-size: 12px;
   font-weight: 800;
 }
